@@ -22,7 +22,8 @@ workflows:
     jobs:
       - test
       - heroku/deploy-via-git:
-          api-key: "7aa48b79-dca2-498e-901d-db1294f46782"
+          context:
+            - heroku
           app-name: "pluto-demo"
           requires:
             - test
