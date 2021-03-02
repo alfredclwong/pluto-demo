@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.18
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -14,7 +14,17 @@ macro bind(def, element)
 end
 
 # ╔═╡ 8b0a2bd0-4ffa-11eb-36d8-1d012eacd12a
+begin
 using Plots, LinearAlgebra#, StructArrays
+plotsize = (640, 360)
+html"""
+<style>
+main{
+		margin-left:-15%;
+		max-width:40%;
+}
+"""
+end
 
 # ╔═╡ f9940280-4f8a-11eb-3271-59c3c3601353
 md"""
@@ -47,14 +57,11 @@ Neuron spikes are modelled as 4D systems ``\mathbf{x} = (v, m, h, n)`` where v d
 	.125exp(-(v+65)/80)]                     # β_n
 
 # ╔═╡ 17690c60-4ffe-11eb-031a-ab50ed1623e9
-#=
-begin
-	local vs = collect(-65.0:.1:0.0)
+let vs = collect(-65.0:.1:0.0)
 	plot(vs, vcat(map(f -> hcat(map(f, vs)...), [α, β])...)',
 		label=hcat(("$(a)_$(b)" for a in split("αβ","") for b in split("mhn",""))...),
-		size=(2500, 1000), thickness_scaling=4, legend=:outertopright)
+		size=plotsize, legend=:outertopright)
 end
-=#
 
 # ╔═╡ b8bd00be-501d-11eb-0204-1998b4ca14df
 begin
@@ -62,7 +69,7 @@ begin
 	plot(vs, hcat([α(v)./(α(v).+β(v)) for v in vs]...)',
 		xlim=(vs[1], vs[end]), ylim=(0, 1),
 		label=hcat(["$(c)_∞" for c in split("mhn", "")]...),
-		size=(2500, 1000), thickness_scaling=4, legend=:outertopright)
+		size=plotsize, legend=:outertopright)
 	plot!([-65], seriestype=:vline, label=nothing, line=(:dash, :black))
 end
 
@@ -106,26 +113,24 @@ function constant_pulse(I_ext::T1, t1::T2, t0::T2=50.; δ::T2=1e-3) where {T1 <:
 end
 
 # ╔═╡ c7d9db40-5019-11eb-377f-499b5fe6e762
-@bind I_ext html"<input type=\"range\" value=\"2.3\" min=\"0\" max=\"10\" step=\".02\" style=\"width:30%\" oninput=\"this.nextElementSibling.value=this.value\"><output>2.3</output>"
+@bind I_ext html"Current input slider <input type=\"range\" value=\"2.3\" min=\"0\" max=\"10\" step=\".02\" style=\"width:30%\" oninput=\"this.nextElementSibling.value=this.value\"><output>2.3</output>"
 
 # ╔═╡ 47c69dae-501b-11eb-0a7e-9bcf8f023cf1
-@bind t html"<input type=\"number\" value=\"100\">"
+@bind t html"Simulation time <input type=\"number\" value=\"100\">"
 
 # ╔═╡ baaf2c70-5020-11eb-0716-0512c15562c7
-begin
-	local T, X = constant_pulse(Float64(I_ext), Float64(t), δ=1e-2)
-	local l = @layout [a ; b]
-	p1 = plot(T, [x.v for x in X],
-		xlims=(0, t), ylims=(-100, 50),
-		size=(2000, 2000), thickness_scaling=4, legend=false)
-	p2 = plot(T, hcat([[x.m, x.h, x.n] for x in X]...)',
-		xlims=(0, t),
-		size=(2000, 2000), thickness_scaling=4, legend=false)
+let (T, X) = constant_pulse(Float64(I_ext), Float64(t), δ=1e-2), l = @layout [a ; b]
+	p1 = plot(
+		T, [x.v for x in X],
+		xlims=(0, t), ylims=(-100, 50), legend=false)
+	p2 = plot(
+		T, hcat([[x.m, x.h, x.n] for x in X]...)',
+		xlims=(0, t), ylims=(0, 1), legend=false)
 	plot(p1, p2, layout=l)
 end
 
 # ╔═╡ Cell order:
-# ╠═8b0a2bd0-4ffa-11eb-36d8-1d012eacd12a
+# ╟─8b0a2bd0-4ffa-11eb-36d8-1d012eacd12a
 # ╟─f9940280-4f8a-11eb-3271-59c3c3601353
 # ╟─842eccd2-4ffa-11eb-25cd-4f80f90f6d38
 # ╟─57507b90-4ffb-11eb-0a6f-6357944096f6
