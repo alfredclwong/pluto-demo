@@ -1,7 +1,9 @@
 using StaticArrays: SVector, SMatrix, @SVector, @SMatrix
 using Colors: HSVA
 import Polyhedra
-using Polyhedra: polyhedron, vrep, MixedMatVRep, Polyhedron, HalfSpace, vrepiscomputed
+using Polyhedra: polyhedron, vrep, MixedMatVRep, Polyhedron, HalfSpace, vrepiscomputed, DefaultLibrary
+import GLPK
+lib = DefaultLibrary{Float64}(GLPK.Optimizer)
 
 """
 	propagate(dz::Real, x̄::SVector{N,T}; θ̄::SVector{N,<:Real}) where {N,T<:Real}
@@ -24,57 +26,22 @@ function propagate(
 	x̄ + (tand.(θ̄) + tanθ̄) * dz
 end
 
-# """
-# 	Ray{N,T<:Real}
-
-# `N` is the dimension of the hyperplane within which rays are sourced.
-# `T` is the numeric type used to represent positions and angles.
-
-# Angles (degrees) are taken as deviations from the generalized z-axis within their
-# respective dimensions (field of view).
-# """
-# struct Ray{N,T<:Real}
-# 	x̄::SVector{N,T}
-# 	θ̄::SVector{N,T}
-# end
-
-# """
-# 	Ray(x̄::SVector{N,T}, θ̄::SVector{N,T}, z::Real) where {N,T<:Real}
-
-# Find a ray's source from its propagated position (e.g. on the eyebox).
-# """
-# function Ray(x̄::SVector{N,T}, θ̄::SVector{N,T}, z::Real) where {N,T<:Real}
-# 	Ray(propagate(-z, x̄; θ̄), θ̄)
-# end
-
-# """
-# 	propagate(z::Real, ray::Ray)
-
-# Propagate a Ray.
-# """
-# propagate(z::Real, ray::Ray) = Ray(ray.x̄, ray.θ̄, -z)
-
-# """
-# 	point(ray::Ray; tan::Bool = false)
-
-# Express a ray as a 2N-dim vector. If `tan` is true, take tand.(θ̄) instead of θ̄.
-# """
-# function point(ray::Ray{N}; tan::Bool = false) where N
-# 	SVector{2N}(ray.x̄..., (tan ? tand : identity).(ray.θ̄)...)
-# end
-
 ## POLYHEDRA ##
 
+"""
+	propagate(dz::Real, rays::Polyhedron)
+
+A polyhedron represents a collection of rays. Assuming angles are given as tanθ̄, we apply
+a shear matrix to propagate the entire collection efficiently.
+"""
 propagate(dz::Real, rays::Polyhedron) = (@SMatrix [1 dz;0 1]) * rays
 
 """
-	e(i::Integer, n::Integer)
+	vertices(poly::Polyhedron)
+
+Force computation of, and extract, vrep from polyhedron.
 """
-function e(i::Integer, n::Integer)
-	ē = zeros(n)
-	ē[i] = 1
-	SVector{n}(ē)
-end
+vertices(poly::Polyhedron) = MixedMatVRep(vrep(poly)).V
 
 """
 	box(intervals::SMatrix{N,2}) where N
@@ -86,25 +53,20 @@ function box(intervals::SMatrix{N,2}) where N
 		[HalfSpace(s(e(i,N)), s(bound)) for (s, bound) in zip((-,+), intervals[i,:])]
 		for i in 1:N
 	)
-	polyhedron(reduce(∩, halfspaces))
+	polyhedron(reduce(∩, halfspaces), lib)
 end
 
-"""
-	box(intervals::Array{<:Real,2})
-
-Array convenience conversion.
-"""
 box(intervals::Array{<:Real,2}) = box(SMatrix{size(intervals)...}(intervals))
 
-"""
-	box(intervals::Vector{<:Tuple{Real,Real}})
-
-Vector{Tuple} convenience conversion.
-"""
 function box(intervals::Vector{<:Tuple{Real,Real}})
 	box(reduce(vcat, [[interval[1] interval[2]] for interval in intervals]))
 end
 
+"""
+	boundingbox(poly::Polyhedron)
+
+N-dim axis-oriented bounding box for a polyhedron. Returns nothing if polyhedron is empty.
+"""
 function boundingbox(poly::Polyhedron)
 	vertexlist = vertices(poly)
 	if isempty(vertexlist)
@@ -114,20 +76,29 @@ function boundingbox(poly::Polyhedron)
 	box(reduce(vcat, zip(mins, maxs)))
 end
 
+"""
+	cover(eyebox::Polyhedron, xlens::Tuple{<:Real,<:Real}, xfov::Tuple{<:Real,<:Real})
+
+Cover the eyebox across a given range in the device plane and fov.
+"""
 function cover(eyebox::Polyhedron, xlens::Tuple{<:Real,<:Real}, xfov::Tuple{<:Real,<:Real})
     fulllens = box([xlens, xfov])
 	intersection = intersect(eyebox, fulllens)
 	boundingbox(intersection)
 end
 
-vertices(poly::Polyhedron) = MixedMatVRep(vrep(poly)).V
-
-# function poly(rays::Vector{<:Ray}; tan::Bool = false)
-# 	f = tan ? tand : identity
-# 	polyhedron(vrep([[p[1], f(p[2])] for p in point.(rays)]))
-# end
-
 ## OTHER ##
+
+"""
+	e(i::Integer, n::Integer)
+
+Canonical basis vector utility function.
+"""
+function e(i::Integer, n::Integer)
+	ē = zeros(n)
+	ē[i] = 1
+	SVector{n}(ē)
+end
 
 function colorrange(n::Integer; s::Real=1, v::Real=1, a::Real=1)
 	n == 0 ? [] : range(HSVA(0,s,v,a); stop=HSVA(359,s,v,a), length=n+1)[1:n]

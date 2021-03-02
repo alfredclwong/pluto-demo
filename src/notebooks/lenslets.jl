@@ -32,12 +32,12 @@ end
 module Wigner include("../Wigner.jl") end
 
 # ╔═╡ 62eac400-795f-11eb-208f-87ee3dfc5356
-let δ = .01,
+let δ = 1e-2,
 	sliders = Dict(
-		"device x" => (@bind xdevicewidth Slider(0:δ:28, default=28)),
+		"device x" => (@bind xdevicewidth Slider(δ:δ:28, default=28)),
 		"eyebox x" => (@bind xeyeboxwidth Slider(0:δ:2, default=2)),
 		"lens x" => (@bind xlenswidth Slider(.5:δ:3, default=3)),
-		"fov x" => (@bind xfovmax Slider(0:δ:40, default=40)),
+		"fov x" => (@bind xfovmax Slider(δ:δ:40, default=40)),
 		"eye z" => (@bind zeye Slider(0:δ:20, default=20))
 	)
 
