@@ -22,6 +22,9 @@ workflows:
     jobs:
       - test
       - heroku/deploy-via-git:
+          pre-steps:
+            - run:
+                command: julia -e 'using Pkg; Pkg.activate("."); Pkg.develop(path="WignerTools")'
           context:
             - heroku
           app-name: "pluto-demo"
