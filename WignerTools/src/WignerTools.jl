@@ -1,4 +1,5 @@
 module WignerTools
+export propagate, box, cover, centredrange
 
 using StaticArrays: SVector, SMatrix, @SVector, @SMatrix
 using Colors: HSVA
@@ -8,7 +9,7 @@ import GLPK
 lib = DefaultLibrary{Float64}(GLPK.Optimizer)
 
 """
-	propagate(dz::Real, x̄::SVector{N,T}; θ̄::SVector{N,<:Real}) where {N,T<:Real}
+	propagate(dz::Real, x̄::SVector{N,T}; θ̄::SVector{N,<:Real}, tanθ̄::SVector{N,<:Real}) where {N,T<:Real}
 
 Propagate a ray along the z-axis by `dz`.
 
