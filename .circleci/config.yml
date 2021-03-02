@@ -9,11 +9,11 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Install and Test this package
-        command: julia -e 'using Pkg; Pkg.update(); Pkg.clone(pwd()); Pkg.build("MyPkg"); Pkg.test("MyPkg", coverage=true);'
+          name: Install and Test this package
+          command: julia --project -e 'using Pkg; Pkg.instantiate(); Pkg.test("WignerTools", coverage=true);'
       - run:
-        name: Process code coverage
-        command: julia -e 'using Pkg; cd(Pkg.dir("MyPkg")); Pkg.add("Coverage"); using Coverage; coverage = process_folder(); LCOV.writefile("coverage-lcov.info", coverage)'
+          name: Process code coverage
+          command: julia --project -e 'using Pkg; Pkg.add("Coverage"); using Coverage; coverage = process_folder(); LCOV.writefile("coverage-lcov.info", coverage)'
       - codecov/upload:
-        file: "coverage-lcov.info"
-        token: "dcacaacc-a3d7-46e8-921d-5aa835c6d305"
+          file: "coverage-lcov.info"
+          token: "dcacaacc-a3d7-46e8-921d-5aa835c6d305"
