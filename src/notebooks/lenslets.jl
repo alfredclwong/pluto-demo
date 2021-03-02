@@ -17,6 +17,7 @@ end
 begin
 using PlutoUI: Slider
 using Plots: plot, plot!, xlims!, ylims!, @layout
+include("../../WignerTools/src/WignerTools.jl")
 using WignerTools
 
 html"""
