@@ -10,7 +10,7 @@ jobs:
       - checkout
       - run:
           name: Test and get code coverage for WignerTools
-          command: julia --project --code-coverage=coverage-lcov.info -e 'using Pkg; Pkg.test("WignerTools")'
+          command: julia --project=WignerTools --code-coverage=coverage-lcov.info -e 'using Pkg; Pkg.test()'
       - codecov/upload:
           file: "coverage-lcov.info"
           token: "dcacaacc-a3d7-46e8-921d-5aa835c6d305"
