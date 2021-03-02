@@ -1,2 +1,3 @@
 [deps]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+WignerTools = "e20f569d-ca02-4872-b78d-58c4f0213881"
