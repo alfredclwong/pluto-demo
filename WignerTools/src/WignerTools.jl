@@ -1,3 +1,5 @@
+module WignerTools
+
 using StaticArrays: SVector, SMatrix, @SVector, @SMatrix
 using Colors: HSVA
 import Polyhedra
@@ -109,3 +111,5 @@ function centredrange(start::Real, stop::Real, step::Real)
 	n = max(0, floor(range / step))
 	start+(range-n*step)/2:step:stop
 end
+
+end # module

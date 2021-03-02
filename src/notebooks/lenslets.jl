@@ -17,6 +17,7 @@ end
 begin
 using PlutoUI: Slider
 using Plots: plot, plot!, xlims!, ylims!, @layout
+using WignerTools
 
 html"""
 <h1>MLA Design Tool Mockup</h1>
@@ -27,9 +28,6 @@ main{
 }
 """
 end
-
-# ╔═╡ 2c2ea610-796f-11eb-12d5-03770b36ae3a
-module Wigner include("../Wigner.jl") end
 
 # ╔═╡ 62eac400-795f-11eb-208f-87ee3dfc5356
 let δ = 1e-2,
@@ -53,9 +51,9 @@ xdevice = (-xdevicewidth/2, xdevicewidth/2)
 xeyebox = (-xeyeboxwidth/2, xeyeboxwidth/2)
 xfov = (-xfovmax, xfovmax) .|> float
 
-device = Wigner.box([xdevice, tand.(xfov)])
-eyebox = Wigner.propagate(-zeye, Wigner.box([xeyebox, tand.(xfov)]))
-lenses = [Wigner.cover(eyebox, (xi, xi+xlenswidth), xfov) for xi in Wigner.centredrange(xdevice..., xlenswidth)[1:end-1]]
+device = WignerTools.box([xdevice, tand.(xfov)])
+eyebox = WignerTools.propagate(-zeye, WignerTools.box([xeyebox, tand.(xfov)]))
+lenses = [WignerTools.cover(eyebox, (xi, xi+xlenswidth), xfov) for xi in WignerTools.centredrange(xdevice..., xlenswidth)[1:end-1]]
 filter!(l -> l != nothing, lenses)
 
 nothing
@@ -72,7 +70,7 @@ xlims!(-32, 32)
 ylims!(-1, 1)
 
 rplot = plot()
-plot!.(Wigner.propagate.(zeye, e) for e in elements)
+plot!.(WignerTools.propagate.(zeye, e) for e in elements)
 xlims!(-32, 32)
 ylims!(-1, 1)
 
@@ -81,8 +79,7 @@ plot(lplot, rplot, layout=@layout[a b], size=(852, 480))
 end
 
 # ╔═╡ Cell order:
-# ╟─5266b77a-7779-11eb-331e-a5a301a484ad
-# ╠═2c2ea610-796f-11eb-12d5-03770b36ae3a
+# ╠═5266b77a-7779-11eb-331e-a5a301a484ad
 # ╟─62eac400-795f-11eb-208f-87ee3dfc5356
 # ╠═04e6e752-7839-11eb-181e-e5ecae56e424
 # ╠═e88f55e8-7a8c-11eb-32de-6b4ce50d5908
