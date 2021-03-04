@@ -86,8 +86,8 @@ Cover the eyebox across a given range in the device plane and fov.
 """
 function cover(eyebox::Polyhedron, xlens::Tuple{<:Real,<:Real}, xfov::Tuple{<:Real,<:Real})
     fulllens = box([xlens, xfov])
-	intersection = intersect(eyebox, fulllens)
-	boundingbox(intersection)
+    intersection = intersect(eyebox, fulllens)
+    boundingbox(intersection)
 end
 
 ## OTHER ##
